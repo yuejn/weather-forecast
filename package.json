@@ -4,8 +4,21 @@
   "description": "Fetches, saves, and returns local weather forecast in 3-hourly increments.",
   "main": "index.js",
   "scripts": {
-    "test": "mocha ./index.js"
+    "watch": "nodemon ./index.js",
+    "start": "npm run watch",
+    "test": "mocha"
   },
   "author": "J Ho",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^6.0.2",
+    "nodemon": "^1.18.10"
+  },
+  "dependencies": {
+    "express": "^4.16.4",
+    "pg": "^7.9.0",
+    "sequelize": "^5.1.0",
+    "sequelize-cli": "^5.4.0"
+  }
 }
