@@ -1,5 +1,4 @@
 'use strict';
-
 const models = require('./models');
 const app = require('./app');
 
