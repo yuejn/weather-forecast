@@ -1,0 +1,11 @@
+{
+  "name": "weather-forecast",
+  "version": "1.0.0",
+  "description": "Fetches, saves, and returns local weather forecast in 3-hourly increments.",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha ./index.js"
+  },
+  "author": "J Ho",
+  "license": "ISC"
+}
