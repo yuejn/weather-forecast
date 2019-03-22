@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "watch": "nodemon ./index.js",
-    "parse": "nodemon ./parse.js",
+    "parser": "nodemon ./parsers/parse.js",
     "start": "npm run watch",
-    "test": "nodemon --exec \"mocha --recursive tests\""
+    "test": "NODE_ENV=test npx sequelize db:create && NODE_ENV=test nodemon --exec \"mocha --recursive tests\""
   },
   "author": "J Ho",
   "license": "ISC",
@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "express": "^4.16.4",
+    "geocoder": "^0.2.3",
     "moment": "^2.24.0",
     "pg": "^7.9.0",
     "sequelize": "^5.1.0",

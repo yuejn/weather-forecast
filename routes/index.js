@@ -4,6 +4,6 @@ const forecastController = require('../controllers/forecastController');
 const { catchErrors } = require('../handlers/errorHandlers');
 
 router.get('/', forecastController.root);
-router.get('/today', forecastController.getToday);
+router.get('/today', catchErrors(forecastController.getToday));
 
 module.exports = router;

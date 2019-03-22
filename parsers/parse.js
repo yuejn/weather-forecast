@@ -17,7 +17,7 @@ const averageTemperature = temperatures => {
 
 const saveForecast = async () => {
   try {
-    fs.readFile('seeders/data/worldweatheronline_2.json', 'utf8', (error, data) => {
+    fs.readFile('./seeders/data/worldweatheronline_2.json', 'utf8', (error, data) => {
       if (error) throw error;
       const forecast = JSON.parse(data);
 
@@ -36,14 +36,14 @@ const saveForecast = async () => {
 
       // check if the day forecast exists in the database
       // check if the day forecast hourlies (8 entries)
-      // save the day with the location ID above, return the day ID 
+      // save the day with the location ID above, return the day ID
 
       // Save the day forecast
       forecast.data.weather.forEach(day => {
         const date = day.date;
         const dayForecast = {
           date: date,
-          sunrise: convertToDateTime(date, day.astronomy[0].sunrise),
+          sunrise: convertToDateTime(`${date} ${day.astronomy[0].sunrise}`),
           sunset: convertToDateTime(date, day.astronomy[0].sunset),
           moonrise: convertToDateTime(date, day.astronomy[0].moonrise),
           moonset: convertToDateTime(date, day.astronomy[0].moonset),
@@ -60,7 +60,6 @@ const saveForecast = async () => {
         day.hourly.shift();
 
         // save the hourlies, save it to a day
-
 
         // Save the three-hourlies
         day.hourly.forEach(periodic => {

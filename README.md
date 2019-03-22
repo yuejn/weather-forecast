@@ -1,13 +1,13 @@
-## To-do list 
+## To-do list
 
 - Set up development environment (Docker, Node, PostgreSQL)
-- Set up  models (PeriodicForecast, DayForecast, Location) 
+- Set up  models (PeriodicForecast, DayForecast, Location)
 - Write tests (API calls, and fetching from external API)
-- Set up background job for populating weather info 
+- Set up background job for populating weather info
 - API calls (/today?location=<x>)
 - Clean up
 
-## Flow 
+## Flow
 
 Q. Is there a forecast for today in this location?
 
@@ -17,3 +17,7 @@ A.  NO - fetch from external API
 a) save data to database and parse
 b) respond parsed data from external fetch (no waiting)
 
+
+---
+
+Weather icons - different for each weather API. Map to own weather icon service.

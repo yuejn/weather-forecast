@@ -104,12 +104,11 @@ exports.findCreateLocation = location => {
 
 // location is an Id, day is an Object
 exports.findCreateDayForecast = (location, day) => {
-  console.log(location, day)
-  if (!location || !day) throw Error('No location or day object');
+  if (!location || !day) throw Error('No location or day Object');
   models.DayForecast.findOne({
     where: {
       location: location,
-      date: day.date
+      date: date
     },
     defaults: {
       // ...day
