@@ -14,7 +14,6 @@ exports.getToday = async (req, res) => {
         message: "Need `location` parameter."
       });
   } else {
-
     forecast.saveForecast;
     res.status(200);
     res.send();
