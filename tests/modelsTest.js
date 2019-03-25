@@ -17,22 +17,3 @@ describe('Models and Sequelize', () => {
     done();
   });
 });
-
-describe('Location', () => {
-  before(done => {
-    models.sequelize
-      .sync({ force: true, match: /_test$/, logging: false })
-      .then(() => {
-        done();
-      })
-  });
-  it('has a Location', async () => {
-    await models.Location.create({
-      areaName: 'Amsterdam',
-      region: 'North Holland',
-      country: 'Netherlands'
-    });
-    const location = await models.Location.findAll();
-    expect(location).to.have.length(1);
-  });
-});

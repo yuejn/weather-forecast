@@ -4,16 +4,14 @@ module.exports = (sequelize, DataTypes) => {
     date: DataTypes.DATE,
     sunrise: DataTypes.DATE,
     sunset: DataTypes.DATE,
-    moonrise: DataTypes.DATE,
-    moonset: DataTypes.DATE,
-    moonPhase: DataTypes.STRING,
     maxTempCelsius: DataTypes.FLOAT,
     minTempCelsius: DataTypes.FLOAT,
-    maxTempFahrenheiht: DataTypes.FLOAT,
-    minTempFahrenheiht: DataTypes.FLOAT
+    maxTempFahrenheit: DataTypes.FLOAT,
+    minTempFahrenheit: DataTypes.FLOAT
   }, {});
   DayForecast.associate = function(models) {
     models.DayForecast.hasMany(models.PeriodicForecast);
+    models.DayForecast.belongsTo(models.Location);
   };
   return DayForecast;
 };

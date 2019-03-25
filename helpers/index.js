@@ -46,18 +46,22 @@ const temperatureDescription = (temperature, temperatureFeelsLike) => {
   }
 }
 
-const precipitationDescription = precipitation => {
-  let aspects = [];
-  if (precipitation.chanceOfWind > 70) aspects.push('wind');
-  if (precipitation.chanceOfRain > 70) aspects.push('rain');
-  if (precipitation.chanceOfSnow > 70) aspects.push('snow');
-  const chances = aspects.join(', ').replace(/,(?=[^,]*$)/, ' and');
-  return `There is a high chance of ${chances}`
+const precipitationDescription = (precipitation, percentage = 65) => {
+  if (precipitation.chanceOfWind > percentage || precipitation.chanceOfRain > percentage || precipitation.chanceOfSnow > percentage) {
+    let aspects = [];
+    if (precipitation.chanceOfWind > percentage) aspects.push('wind');
+    if (precipitation.chanceOfRain > percentage) aspects.push('rain');
+    if (precipitation.chanceOfSnow > percentage) aspects.push('snow');
+    const chances = aspects.join(', ').replace(/,(?=[^,]*$)/, ' and');
+    return `There is a high chance of ${chances}.`;
+  } else {
+    return '';
+  }
 }
 
 const weatherDescription = description => {
   let sentence = [];
-  if (description.includes('possible')) {
+  if (description && description.includes('possible')) {
     sentence.push('There\'s possibly going to be ');
     sentence.push(description.replace('possible', '').trim().toLowerCase());
   } else {
@@ -69,13 +73,16 @@ const weatherDescription = description => {
 
 exports.forecastToSpeech = (forecast, metric = 'celsius') => {
   const [temperature, temperatureFeelsLike] = convertedTemperatures(forecast, metric);
-  return `${weatherDescription(forecast.weatherDescription)} with ${temperatureDescription(temperature, temperatureFeelsLike)} ${precipitationDescription(forecast)}.`
+  return `${weatherDescription(forecast.weatherDescription)} with ${temperatureDescription(temperature, temperatureFeelsLike)} ${precipitationDescription(forecast)}`.trim();
 }
 
 exports.parseDayForecast = (forecast, parser = 'worldweatheronline') => {
   if (parser == 'worldweatheronline') {
     const dayForecast = forecast.data.weather[0];
     const date = dayForecast.date;
+
+    // remove the 2400 entry, use 0000 as start of the day
+    dayForecast.hourly.shift();
     return {
       date: new Date(date),
       sunrise: new Date(`${date} ${dayForecast.astronomy[0].sunrise}`),
@@ -87,6 +94,48 @@ exports.parseDayForecast = (forecast, parser = 'worldweatheronline') => {
       maxTempFahrenheit: parseFloat(dayForecast.maxtempF),
       minTempCelsius: parseFloat(dayForecast.mintempC),
       minTempFahrenheit: parseFloat(dayForecast.mintempF),
+      periodics: dayForecast.hourly
+    }
+  }
+}
+
+exports.parsePeriodicForecast = (date, dayId, periodic, parser = 'worldweatheronline') => {
+  if (parser == 'worldweatheronline') {
+    if (periodic.time == '0') periodic.time = '000';
+
+    const startingHour = parseInt(periodic.time.slice(0, -2));
+    const startTime = new Date(date.setUTCHours(startingHour));
+    const endTime = new Date(date.setUTCHours(startingHour + 3));
+
+    const textToSpeech = this.forecastToSpeech({
+      tempCelsius: parseFloat(periodic.tempC),
+      tempFahrenheit: parseFloat(periodic.tempF),
+      tempFeelsLikeCelsius: parseFloat(periodic.FeelsLikeC),
+      tempFeelsLikeFahrenheit: parseFloat(periodic.FeelsLikeF),
+      weatherDescription: periodic.weatherDesc[0].value,
+      chanceOfRain: parseInt(periodic.chanceofrain),
+      chanceOfWind: parseInt(periodic.chanceofwindy),
+      chanceOfSnow: parseInt(periodic.chanceofsnow)
+    });
+    return {
+      DayForecastId: parseInt(dayId),
+      startDate: startTime,
+      endDate: endTime,
+      tempCelsius: parseFloat(periodic.tempC),
+      tempFahrenheit: parseFloat(periodic.tempF),
+      tempFeelsLikeCelsius: parseFloat(periodic.FeelsLikeC),
+      tempFeelsLikeFahrenheit: parseFloat(periodic.FeelsLikeF),
+      windSpeedMiles: parseInt(periodic.windspeedMiles),
+      windSpeedKmph: parseInt(periodic.windspeedKmph),
+      windDegrees: parseInt(periodic.winddirDegree),
+      precipitation: parseFloat(periodic.precipMM),
+      chanceOfRain: parseInt(periodic.chanceofrain),
+      chanceOfWind: parseInt(periodic.chanceofwindy),
+      chanceOfSnow: parseInt(periodic.chanceofsnow),
+      weatherIconId: periodic.weatherCode,
+      weatherIconUrl: periodic.weatherIconUrl[0].value,
+      weatherDescription: periodic.weatherDesc[0].value,
+      textToSpeech: textToSpeech
     }
   }
 }
@@ -94,47 +143,29 @@ exports.parseDayForecast = (forecast, parser = 'worldweatheronline') => {
 // location is an Object (name, country, region, latitude, longitude)
 exports.findCreateLocation = location => {
   return models.Location.findOrCreate({
+    limit: 1,
     where: {
-      areaName: location['name']
+      city: location['name']
     }
-  }).then(([location, created]) => {
-    return location.id;
-  }).catch(error => console.log(error));
+  }).then(([location]) => {
+    return location;
+  }).catch(err => {
+    console.log('Location', err)
+  });
 };
 
-// location is an Id, day is an Object
-exports.findCreateDayForecast = (location, day) => {
-  if (!location || !day) throw Error('No location or day Object');
-  models.DayForecast.findOne({
+exports.findCreateDayForecast = (locationId, parsedDay) => {
+  if (!locationId) throw Error('No locationId');
+  if (!parsedDay) throw Error('No day object');
+  return models.DayForecast.findOrCreate({
     where: {
-      location: location,
-      date: date
+      LocationId: locationId,
+      date: parsedDay.date
     },
     defaults: {
-      // ...day
+      ...parsedDay
     }
-  }).then(([dayForecast, created]) => {
-    console.log(dayForecast.get({
-      plain: true
-    }))
-    console.log(created);
-  });
-}
-//
-// exports.findCreateDayForecast = (location, day) => {
-//   models.DayForecast.findOrCreate({
-//     where: {
-//       day: day['date'],
-//       location: location
-//     },
-//     defaults: {
-//       day
-//     }
-//   }).then([dayForecast, created]) => {
-//     console.log(dayForecast.get({
-//       plain: true
-//     }));
-//     console.log(created);
-//     return dayForecast;
-//   };
-// }
+  }).then(([dayForecast]) => {
+    return dayForecast;
+  }).catch(err => console.log('DayForecast:', err) );
+};

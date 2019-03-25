@@ -37,11 +37,11 @@ module.exports = {
         allowNull: false,
         type: Sequelize.FLOAT
       },
-      maxTempFahrenheiht: {
+      maxTempFahrenheit: {
         allowNull: false,
         type: Sequelize.FLOAT
       },
-      minTempFahrenheiht: {
+      minTempFahrenheit: {
         allowNull: false,
         type: Sequelize.FLOAT
       },

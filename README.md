@@ -21,3 +21,17 @@ b) respond parsed data from external fetch (no waiting)
 ---
 
 Weather icons - different for each weather API. Map to own weather icon service.
+
+---
+
+Run the application:
+
+```
+docker-compose up
+```
+
+Run the tests:
+
+```
+docker-compose run app npm test
+```

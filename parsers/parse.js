@@ -5,12 +5,6 @@ const moment = require('moment');
 
 // For parsing API data from worldweatheronline.com
 
-// Date must be in format YYYY-MM-DD
-// Time must be in format HH:mm A
-const convertToDateTime = (date, time) => {
-  return moment(`${date} ${time}`, 'YYYY-MM-DD HH:mm A').format();
-}
-
 const averageTemperature = temperatures => {
   return temperatures.map(parseFloat).reduce((a, b) => a + b, 0) / temperatures.length;
 }
@@ -27,7 +21,7 @@ const saveForecast = async () => {
 
       // Save the location
       const area = {
-        name: forecast.data.nearest_area[0]['areaName'][0]['value'],
+        name: forecast.data.nearest_area[0]['city'][0]['value'],
         region: forecast.data.nearest_area[0]['region'][0]['value'],
         country: forecast.data.nearest_area[0]['country'][0]['value'],
         latitude: forecast.data.nearest_area[0]['latitude'],
@@ -43,10 +37,10 @@ const saveForecast = async () => {
         const date = day.date;
         const dayForecast = {
           date: date,
-          sunrise: convertToDateTime(`${date} ${day.astronomy[0].sunrise}`),
-          sunset: convertToDateTime(date, day.astronomy[0].sunset),
-          moonrise: convertToDateTime(date, day.astronomy[0].moonrise),
-          moonset: convertToDateTime(date, day.astronomy[0].moonset),
+          sunrise: new Date(`${date} ${day.astronomy[0].sunrise}`),
+          sunset: new Date(`${date} ${day.astronomy[0].sunset}`),
+          moonrise: new Date(`${date} ${day.astronomy[0].moonrise}`),
+          moonset: new Date(`${date} ${day.astronomy[0].moonset}`),
           moonPhase: day.astronomy[0].moon_phase,
           maxTempCelsius: day.maxtempC,
           maxTempFahrenheiht: day.maxtempF,
@@ -55,7 +49,7 @@ const saveForecast = async () => {
           avgTempCelsius: averageTemperature([day.maxtempC, day.mintempC]),
           avgTempFahrenheit: averageTemperature([day.maxtempF, day.mintempF])
         };
-
+        console.log(dayForecast);
         // remove 2400 entry, use 0000 as start of the day
         day.hourly.shift();
 

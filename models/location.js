@@ -1,7 +1,7 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
   const Location = sequelize.define('Location', {
-    areaName: DataTypes.STRING,
+    city: DataTypes.STRING,
     region: DataTypes.STRING,
     country: DataTypes.STRING,
     latitude: DataTypes.FLOAT,
