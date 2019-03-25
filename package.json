@@ -7,7 +7,7 @@
     "watch": "nodemon ./index.js",
     "parser": "nodemon ./parsers/parse.js",
     "start": "npm run watch",
-    "test": "NODE_ENV=test npx sequelize db:create && NODE_ENV=test nodemon --exec \"mocha --recursive tests\""
+    "test": "NODE_ENV=test npx sequelize db:drop && NODE_ENV=test npx sequelize db:create && NODE_ENV=test nodemon --exec \"mocha --recursive tests\""
   },
   "author": "J Ho",
   "license": "ISC",
@@ -15,9 +15,12 @@
     "chai": "^4.2.0",
     "chai-http": "^4.2.1",
     "mocha": "^6.0.2",
-    "nodemon": "^1.18.10"
+    "nock": "^10.0.6",
+    "nodemon": "^1.18.10",
+    "sinon": "^7.3.0"
   },
   "dependencies": {
+    "axios": "^0.18.0",
     "express": "^4.16.4",
     "geocoder": "^0.2.3",
     "moment": "^2.24.0",
