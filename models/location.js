@@ -1,14 +1,28 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
   const Location = sequelize.define('Location', {
-    city: DataTypes.STRING,
-    region: DataTypes.STRING,
-    country: DataTypes.STRING,
-    latitude: DataTypes.FLOAT,
-    longitude: DataTypes.FLOAT
-  }, {});
-  Location.associate = function(models) {
-    models.Location.hasMany(models.DayForecast);
+    city: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    country: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    latitude: {
+      type: DataTypes.FLOAT
+    },
+    longitude: {
+      type: DataTypes.FLOAT
+    }
+  }, {
+    indexes: [{
+      unique: true,
+      fields: ['city', 'country']
+    }]
+  });
+  Location.associate = models => {
+    Location.hasMany(models.DayForecast);
   };
   return Location;
 };

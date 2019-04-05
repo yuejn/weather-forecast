@@ -12,10 +12,8 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING
       },
-      region: {
-        type: Sequelize.STRING
-      },
       country: {
+        allowNull: false,
         type: Sequelize.STRING
       },
       latitude: {
@@ -32,7 +30,8 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE
       }
-    });
+    })
+    .then(() => queryInterface.addConstraint('Locations', ['city', 'country'], { type: 'unique' }))
   },
   down: (queryInterface, Sequelize) => {
     return queryInterface.dropTable('Locations');

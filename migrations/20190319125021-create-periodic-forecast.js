@@ -17,9 +17,11 @@ module.exports = {
         type: Sequelize.DATE
       },
       tempCelsius: {
+        allowNull: false,
         type: Sequelize.FLOAT
       },
       tempFahrenheit: {
+        allowNull: false,
         type: Sequelize.FLOAT
       },
       tempFeelsLikeCelsius: {
@@ -77,7 +79,8 @@ module.exports = {
           key: 'id'
         }
       }
-    });
+    })
+    .then(() => queryInterface.addConstraint('PeriodicForecasts', ['startDate', 'DayForecastId'], { type: 'unique' }))
   },
   down: (queryInterface, Sequelize) => {
     return queryInterface.dropTable('PeriodicForecasts');

@@ -20,15 +20,6 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE
       },
-      moonrise: {
-        type: Sequelize.DATE
-      },
-      moonset: {
-        type: Sequelize.DATE
-      },
-      moonPhase: {
-        type: Sequelize.STRING
-      },
       maxTempCelsius: {
         allowNull: false,
         type: Sequelize.FLOAT
@@ -62,7 +53,9 @@ module.exports = {
           key: 'id'
         }
       }
-    });
+    })
+    .then(() => queryInterface.addIndex('DayForecasts', ['date']))
+    .then(() => queryInterface.addConstraint('DayForecasts', ['date', 'LocationId'], { type: 'unique' }))
   },
   down: (queryInterface, Sequelize) => {
     return queryInterface.dropTable('DayForecasts');

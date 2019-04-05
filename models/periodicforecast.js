@@ -1,26 +1,69 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
   const PeriodicForecast = sequelize.define('PeriodicForecast', {
-    startDate: DataTypes.DATE,
-    endDate: DataTypes.DATE,
-    tempCelsius: DataTypes.FLOAT,
-    tempFahrenheit: DataTypes.FLOAT,
-    tempFeelsLikeCelsius: DataTypes.FLOAT,
-    tempFeelsLikeFahrenheit: DataTypes.FLOAT,
-    windSpeedMiles: DataTypes.INTEGER,
-    windSpeedKmph: DataTypes.INTEGER,
-    windDegrees: DataTypes.INTEGER,
-    precipitation: DataTypes.FLOAT,
-    chanceOfRain: DataTypes.INTEGER,
-    chanceOfWind: DataTypes.INTEGER,
-    chanceOfSnow: DataTypes.INTEGER,
-    weatherIconId: DataTypes.STRING,
-    weatherIconUrl: DataTypes.STRING,
-    weatherDescription: DataTypes.STRING,
-    textToSpeech: DataTypes.TEXT
-  }, {});
-  PeriodicForecast.associate = function(models) {
-    models.PeriodicForecast.belongsTo(models.DayForecast);
+    startDate: {
+      allowNull: false,
+      type: DataTypes.DATE
+    },
+    endDate: {
+      allowNull: false,
+      type: DataTypes.DATE
+    },
+    tempCelsius: {
+      allowNull: false,
+      type: DataTypes.FLOAT
+    },
+    tempFahrenheit: {
+      allowNull: false,
+      type: DataTypes.FLOAT
+    },
+    tempFeelsLikeCelsius: {
+      type: DataTypes.FLOAT
+    },
+    tempFeelsLikeFahrenheit: {
+      type: DataTypes.FLOAT
+    },
+    windSpeedMiles: {
+      type: DataTypes.INTEGER
+    },
+    windSpeedKmph: {
+      type: DataTypes.INTEGER
+    },
+    windDegrees: {
+      type: DataTypes.INTEGER
+    },
+    precipitation: {
+      type: DataTypes.FLOAT
+    },
+    chanceOfRain: {
+      type: DataTypes.INTEGER
+    },
+    chanceOfWind: {
+      type: DataTypes.INTEGER
+    },
+    chanceOfSnow: {
+      type: DataTypes.INTEGER
+    },
+    weatherIconId: {
+      type: DataTypes.STRING
+    },
+    weatherIconUrl: {
+      type: DataTypes.STRING
+    },
+    weatherDescription: {
+      type: DataTypes.STRING
+    },
+    textToSpeech: {
+      type: DataTypes.TEXT
+    }
+  }, {
+    indexes: [{
+      unique: true,
+      fields: ['startDate', 'DayForecastId']
+    }]
+  });
+  PeriodicForecast.associate = models => {
+    PeriodicForecast.belongsTo(models.DayForecast);
   };
   return PeriodicForecast;
 };
