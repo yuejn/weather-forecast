@@ -1,9 +1,16 @@
+'use strict';
+
 const express = require('express');
 const router = express.Router();
 const forecastController = require('../controllers/forecastController');
-const { catchErrors } = require('../handlers/errorHandlers');
 
-router.get('/', forecastController.root);
-router.get('/today', catchErrors(forecastController.getToday));
+// Catch async/await errors
+const catchErrors = fn => {
+  return (req, res, next) => {
+    return fn(req, res, next).catch(next);
+  };
+}
+
+router.get('/', catchErrors(forecastController.root));
 
 module.exports = router;

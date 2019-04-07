@@ -1,7 +1,8 @@
 'use strict';
 
 const models = require('../models');
-const helpers = require('../helpers');
+const forecastUtils = require('../helpers').Forecast;
+const textUtils = require('../helpers').Text;
 const chai = require('chai');
 const expect = chai.expect;
 
@@ -14,7 +15,7 @@ describe('forecastToSpeech()', () => {
         weatherDescription: 'Partly cloudly',
         chanceOfRain: 84
       }
-      const result = helpers.forecastToSpeech(input);
+      const result = textUtils.forecastToSpeech(input);
       expect(result).to.equal('It\'s going to be partly cloudly with a temperature of 4 degrees. It will feel like 1. There is a high chance of rain.');
     });
   });
@@ -26,128 +27,81 @@ describe('forecastToSpeech()', () => {
         tempFeelsLikeCelsius: 1,
         weatherDescription: 'Partly cloudly',
       }
-      const result = helpers.forecastToSpeech(input);
+      const result = textUtils.forecastToSpeech(input);
       expect(result).to.equal('It\'s going to be partly cloudly with a temperature of 4 degrees. It will feel like 1.');
     });
   });
 });
 
 
+describe('findCreateLocation()', () => {
+  it('saves and returns a location', async () => {
+    const locationObject = chai.create('location');
+    const location = await forecastUtils.findCreateLocation(locationObject);
+    expect(location).to.be.ok;
+    expect(location.id).to.equal(1);
+    expect(location.city).to.equal(locationObject.city);
+    expect(location.country).to.equal(locationObject.country);
+  });
+});
+
 describe('findCreateDayForecast()', () => {
-  it('throws an error without a locationId argument', () => {
+  it('throws an error without a location argument', () => {
     expect(() => {
-      helpers.findCreateDayForecast()
-    }).to.throw('No locationId');
+      forecastUtils.findCreateDayForecast()
+    }).to.throw('No location');
   });
 
-  it('throws an error without a parsedDay argument', () => {
+  it('throws an error without a day argument', () => {
     expect(() => {
-      helpers.findCreateDayForecast(1)
+      forecastUtils.findCreateDayForecast(1)
     }).to.throw('No day object');
   });
 
-  it('saves a day forecast', async () => {
-    const location = chai.create('location');
-    const dayForecast = chai.create('dayForecast');
+  it('saves a (parsed) day forecast', async () => {
+    const locationObject = chai.create('location');
+    const dayForecastObject = chai.create('dayForecast');
 
-    await models.Location.create({ location });
-    const locationCount = await models.Location.count();
-    expect(locationCount).to.equal(1);
-
-    await models.DayForecast.create({ dayForecast });
-    const dayForecastCount = await models.DayForecast.count();
-    expect(dayForecastCount).to.equal(1);
+    const location = await forecastUtils.findCreateLocation(locationObject);
+    const dayForecast = await forecastUtils.findCreateDayForecast(location, dayForecastObject);
+    expect(typeof dayForecast).to.equal('object');
   });
 
-  it('saves the hourly forecasts', async () => {
-    const location = chai.create('location');
-    const dayForecast = chai.create('dayForecast');
+  it('saves the (parsed) hourly forecasts to the specified day forecast', async () => {
+    const locationObject = chai.create('location');
+    const rawForecastObject = chai.create('rawForecast');
 
-    await models.Location.create({ location });
-    const locationCount = await models.Location.count();
-    expect(locationCount).to.equal(1);
+    const location = await forecastUtils.findCreateLocation(locationObject);
+    const dayForecast = forecastUtils.parseDayForecast(rawForecastObject, 'worldweatheronline');
 
-    await models.DayForecast.create({ dayForecast });
-    const dayForecastCount = await models.DayForecast.count();
-    expect(dayForecastCount).to.equal(1);
+    const day = await forecastUtils.findCreateDayForecast(location, dayForecast);
 
-    let periodics = [];
-    for(let i = 0; i < 8; i++) {
-      const startDate = new Date(2019,2,19,(i * 3),0,0,0);
-      const endDate = new Date(2019,2,19,(i * 3 + 3),0,0,0);
-      periodics.push(
-        chai.create('periodicForecast', {
-          startDate: startDate,
-          endDate: endDate,
-          DayId: 1
-        })
-      );
-    }
+    expect(day).to.be.ok;
 
-    const periodicForecasts = await models.PeriodicForecast.bulkCreate(
-      periodics,
-      { returning: true }
-    );
-    expect(periodicForecasts.length).to.equal(8);
+    let parsedPeriodics = [];
+    dayForecast.periodics.forEach(periodicForecast => {
+      parsedPeriodics.push(forecastUtils.parsePeriodicForecast(day, periodicForecast, 'worldweatheronline'));
+    });
+
+    const periodics = await forecastUtils.importPeriodicForecasts(parsedPeriodics);
+    const forecast = await forecastUtils.findForecast(location, day.date);
+
+    expect(typeof forecast).to.equal('object');
+    expect(typeof forecast.location).to.equal('object');
   });
 
-  describe('with mock data', () => {
-    it('returns day/hourly forecast from the database', async () => {
-      const location = await models.Location.create( { city: 'Amsterdam', country: 'Netherlands' });
-      const rawForecast = await helpers.getForecast('Amsterdam, Netherlands');
-      const dayForecast = helpers.parseDayForecast(rawForecast, 'worldweatheronline');
-      const day = await models.DayForecast.create({
-        LocationId: location.id,
-        ...dayForecast
-      });
-
-      expect(typeof day).to.equal('object');
-
-      let periodics = [];
-      dayForecast.periodics.forEach(periodicForecast => {
-        periodics.push(
-          helpers.parsePeriodicForecast(day.date, day.id, periodicForecast, 'worldweatheronline')
-        )
-      });
-
-      const periodicForecasts = await models.PeriodicForecast.bulkCreate(
-        periodics,
-        { returning: true }
-      );
-
-      expect(periodicForecasts.length).to.equal(8);
-
-      const getForecasts = await models.PeriodicForecast.findAll({
-        include: [{
-          model: models.DayForecast,
-          required: true,
-          where: {
-            date: '2019-03-19'
-          },
-          include: [{
-            model: models.Location,
-            required: true,
-            where: {
-              id: 1
-            }
-          }]
-        }]
-      });
-
-      expect(getForecasts.length).to.equal(8);
-    })
-  });
+  it('returns the requested forecast');
 
 });
 
 describe('fetching and parsing forecast information from worldweatheronline.com', () => {
   it('fetches the forecast', async () => {
-    const rawForecast = await helpers.getForecast('Amsterdam, Netherlands')
+    const rawForecast = await forecastUtils.getForecast('Amsterdam, Netherlands')
     expect(typeof rawForecast.data).to.equal('object');
   });
   it('pulls out and parse the day forecast', async () => {
-    const rawForecast = await helpers.getForecast('Amsterdam, Netherlands')
-    const parsedForecast = helpers.parseDayForecast(rawForecast, 'worldweatheronline');
+    const rawForecast = await forecastUtils.getForecast('Amsterdam, Netherlands')
+    const parsedForecast = forecastUtils.parseDayForecast(rawForecast, 'worldweatheronline');
     expect(typeof parsedForecast).to.equal('object');
     expect(typeof parsedForecast.date).to.equal('object');
     expect(typeof parsedForecast.sunrise).to.equal('object');
@@ -160,13 +114,13 @@ describe('fetching and parsing forecast information from worldweatheronline.com'
     expect(parsedForecast.periodics.length).to.equal(8);
   });
   it('pulls out and parse the hourly forecasts', async () => {
-    const rawForecast = await helpers.getForecast('Amsterdam, Netherlands');
-    const dayForecast = helpers.parseDayForecast(rawForecast, 'worldweatheronline');
-
+    const rawForecast = await forecastUtils.getForecast('Amsterdam, Netherlands');
+    const dayForecast = forecastUtils.parseDayForecast(rawForecast, 'worldweatheronline');
+    const day = { id: 1, date: dayForecast.date }
     let periodics = [];
 
     dayForecast.periodics.forEach(periodicForecast => {
-      periodics.push(helpers.parsePeriodicForecast(new Date('2019-03-19'), 1, periodicForecast, 'worldweatheronline'));
+      periodics.push(forecastUtils.parsePeriodicForecast(day, periodicForecast, 'worldweatheronline'));
     });
 
     expect(periodics.length).to.equal(8);
