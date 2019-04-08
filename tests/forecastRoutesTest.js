@@ -29,8 +29,22 @@ describe('The API', () => {
           expect(err).to.be.null;
           expect(res).to.have.status(200);
           expect(res.type).to.equal('application/json');
-          console.log(res.body)
-          // expect(typeof res.body.weather).to.equal('object');
+          expect(typeof res.body).to.equal('object');
+          expect(res.body.data).to.have.all.keys(
+            [
+              'date',
+              'maxTempCelsius',
+              'maxTempFahrenheit',
+              'minTempCelsius',
+              'minTempFahrenheit',
+              'sunrise',
+              'sunset',
+              'Location',
+              'PeriodicForecasts'
+            ]
+          );
+          expect(typeof res.body.data.PeriodicForecasts[0]).to.equal('object');
+          expect(res.body.data.PeriodicForecasts.length).to.equal(8);
           done();
         });
       });

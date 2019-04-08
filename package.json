@@ -21,11 +21,7 @@
   },
   "dependencies": {
     "axios": "^0.18.0",
-<<<<<<< HEAD
-    "dot-env": "0.0.1",
-=======
     "city-timezones": "^1.0.7",
->>>>>>> eb5eb04... Update READMe with DB instructions.
     "dotenv": "^7.0.0",
     "express": "^4.16.4",
     "moment": "^2.24.0",

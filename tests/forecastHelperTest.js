@@ -1,10 +1,17 @@
 'use strict';
 
+const chai = require('chai');
+const expect = chai.expect;
+
 const models = require('../models');
 const forecastUtils = require('../helpers').Forecast;
 const textUtils = require('../helpers').Text;
-const chai = require('chai');
-const expect = chai.expect;
+
+const cityTimezones = require('city-timezones');
+const moment = require('moment-timezone');
+
+const WEATHER_API = 'worldweatheronline';
+
 
 describe('forecastToSpeech()', () => {
   describe('when there\'s a high chance of rain, snow, or wind', () => {
@@ -42,6 +49,7 @@ describe('findCreateLocation()', () => {
     expect(location.id).to.equal(1);
     expect(location.city).to.equal(locationObject.city);
     expect(location.country).to.equal(locationObject.country);
+    expect(location.timezone).to.equal(locationObject.timezone);
   });
 });
 
@@ -67,12 +75,22 @@ describe('findCreateDayForecast()', () => {
     expect(typeof dayForecast).to.equal('object');
   });
 
+  it('gets the right date from the location specified', async () => {
+    const location = chai.create('location');
+    const cityLookup = cityTimezones.findFromCityStateProvince('Shanghai, China');
+    const date = moment.tz("2019-04-09 05:35 AM", "YYYY-MM-DD hh:mm A", cityLookup[0].timezone).format();
+    expect(date).to.equal("2019-04-09T05:35:00+08:00");
+  });
+
   it('saves the (parsed) hourly forecasts to the specified day forecast', async () => {
     const locationObject = chai.create('location');
     const rawForecastObject = chai.create('rawForecast');
 
+    const cityLookup = cityTimezones.findFromCityStateProvince(`${locationObject.city}, ${locationObject.country}`);
+    const timezone = cityLookup[0].timezone;
+
     const location = await forecastUtils.findCreateLocation(locationObject);
-    const dayForecast = forecastUtils.parseDayForecast(rawForecastObject, 'worldweatheronline');
+    const dayForecast = forecastUtils.parseDayForecast(rawForecastObject, timezone, WEATHER_API);
 
     const day = await forecastUtils.findCreateDayForecast(location, dayForecast);
 
@@ -80,18 +98,14 @@ describe('findCreateDayForecast()', () => {
 
     let parsedPeriodics = [];
     dayForecast.periodics.forEach(periodicForecast => {
-      parsedPeriodics.push(forecastUtils.parsePeriodicForecast(day, periodicForecast, 'worldweatheronline'));
+      parsedPeriodics.push(forecastUtils.parsePeriodicForecast(day, periodicForecast, timezone, WEATHER_API));
     });
-
     const periodics = await forecastUtils.importPeriodicForecasts(parsedPeriodics);
-    const forecast = await forecastUtils.findForecast(location, day.date);
+    let forecast = await forecastUtils.findForecast(location, day.date);
 
     expect(typeof forecast).to.equal('object');
-    expect(typeof forecast.location).to.equal('object');
+    expect(typeof forecast.Location).to.equal('object');
   });
-
-  it('returns the requested forecast');
-
 });
 
 describe('fetching and parsing forecast information from worldweatheronline.com', () => {
@@ -99,13 +113,14 @@ describe('fetching and parsing forecast information from worldweatheronline.com'
     const rawForecast = await forecastUtils.getForecast('Amsterdam, Netherlands')
     expect(typeof rawForecast.data).to.equal('object');
   });
+
   it('pulls out and parse the day forecast', async () => {
-    const rawForecast = await forecastUtils.getForecast('Amsterdam, Netherlands')
-    const parsedForecast = forecastUtils.parseDayForecast(rawForecast, 'worldweatheronline');
+    const rawForecast = await forecastUtils.getForecast('Amsterdam, Netherlands', '2019-03-18')
+    const parsedForecast = forecastUtils.parseDayForecast(rawForecast, 'Europe/Amsterdam', WEATHER_API);
     expect(typeof parsedForecast).to.equal('object');
-    expect(typeof parsedForecast.date).to.equal('object');
-    expect(typeof parsedForecast.sunrise).to.equal('object');
-    expect(typeof parsedForecast.sunset).to.equal('object');
+    expect(typeof parsedForecast.date).to.equal('string');
+    expect(typeof parsedForecast.sunrise).to.equal('string');
+    expect(typeof parsedForecast.sunset).to.equal('string');
     expect(typeof parsedForecast.maxTempCelsius).to.equal('number');
     expect(typeof parsedForecast.maxTempFahrenheit).to.equal('number');
     expect(typeof parsedForecast.minTempCelsius).to.equal('number');
@@ -113,30 +128,23 @@ describe('fetching and parsing forecast information from worldweatheronline.com'
     expect(typeof parsedForecast.periodics).to.equal('object');
     expect(parsedForecast.periodics.length).to.equal(8);
   });
+
   it('pulls out and parse the hourly forecasts', async () => {
     const rawForecast = await forecastUtils.getForecast('Amsterdam, Netherlands');
-    const dayForecast = forecastUtils.parseDayForecast(rawForecast, 'worldweatheronline');
+    const dayForecast = forecastUtils.parseDayForecast(rawForecast, 'Europe/Amsterdam', WEATHER_API);
     const day = { id: 1, date: dayForecast.date }
     let periodics = [];
 
     dayForecast.periodics.forEach(periodicForecast => {
-      periodics.push(forecastUtils.parsePeriodicForecast(day, periodicForecast, 'worldweatheronline'));
+      periodics.push(forecastUtils.parsePeriodicForecast(day, periodicForecast, 'Europe/Amsterdam', WEATHER_API));
     });
 
     expect(periodics.length).to.equal(8);
-    expect(periodics[0].startDate.getTime()).to.equal(Date.UTC(2019,2,19,0,0,0,0))
-    expect(periodics[1].startDate.getTime()).to.equal(Date.UTC(2019,2,19,3,0,0))
-    expect(periodics[2].startDate.getTime()).to.equal(Date.UTC(2019,2,19,6,0,0))
-    expect(periodics[3].startDate.getTime()).to.equal(Date.UTC(2019,2,19,9,0,0))
-    expect(periodics[4].startDate.getTime()).to.equal(Date.UTC(2019,2,19,12))
-    expect(periodics[5].startDate.getTime()).to.equal(Date.UTC(2019,2,19,15))
-    expect(periodics[6].startDate.getTime()).to.equal(Date.UTC(2019,2,19,18))
-    expect(periodics[7].startDate.getTime()).to.equal(Date.UTC(2019,2,19,21))
 
     expect(typeof periodics[0]).to.equal('object');
     expect(typeof periodics[0].DayForecastId).to.equal('number');
-    expect(typeof periodics[0].startDate).to.equal('object');
-    expect(typeof periodics[0].endDate).to.equal('object');
+    expect(typeof periodics[0].startDate).to.equal('string');
+    expect(typeof periodics[0].endDate).to.equal('string');
     expect(typeof periodics[0].tempCelsius).to.equal('number');
     expect(typeof periodics[0].tempFahrenheit).to.equal('number');
     expect(typeof periodics[0].tempFeelsLikeCelsius).to.equal('number');

@@ -1,9 +1,5 @@
 'use strict';
 
-exports.convertToDate = date => {
-  return(new Date(date).toISOString().split('T')[0]);
-}
-
 exports.convertedTemperatures = (forecast, metric) => {
   let temperature, temperatureFeelsLike;
   if (metric == 'celsius') {

@@ -9,6 +9,9 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false
     },
+    timezone: {
+      type: DataTypes.STRING
+    },
     latitude: {
       type: DataTypes.FLOAT
     },
@@ -16,10 +19,16 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.FLOAT
     }
   }, {
-    indexes: [{
-      unique: true,
-      fields: ['city', 'country']
-    }]
+    indexes: [
+      {
+        unique: true,
+        fields: ['city', 'country']
+      },
+      {
+        method: 'BTREE',
+        fields: ['timezone']
+      }
+    ]
   });
   Location.associate = models => {
     Location.hasMany(models.DayForecast);

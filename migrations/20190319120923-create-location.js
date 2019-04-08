@@ -16,6 +16,9 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING
       },
+      timezone: {
+        type: Sequelize.STRING
+      },
       latitude: {
         type: Sequelize.FLOAT
       },
@@ -32,6 +35,7 @@ module.exports = {
       }
     })
     .then(() => queryInterface.addConstraint('Locations', ['city', 'country'], { type: 'unique' }))
+    .then(() => queryInterface.addIndex('Locations', ['timezone']))
   },
   down: (queryInterface, Sequelize) => {
     return queryInterface.dropTable('Locations');
