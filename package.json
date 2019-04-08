@@ -5,9 +5,7 @@
   "main": "index.js",
   "scripts": {
     "watch": "nodemon ./index.js",
-    "parser": "nodemon ./parsers/parse.js",
-    "start": "npm run watch",
-    "old-test": "NODE_ENV=test npx sequelize db:drop && NODE_ENV=test npx sequelize db:create && NODE_ENV=test nodemon --exec \"mocha --recursive tests\"",
+    "start": "node ./index.js",
     "test": "NODE_ENV=test nodemon --exec \"mocha --recursive tests\""
   },
   "author": "J Ho",
@@ -23,7 +21,11 @@
   },
   "dependencies": {
     "axios": "^0.18.0",
+<<<<<<< HEAD
     "dot-env": "0.0.1",
+=======
+    "city-timezones": "^1.0.7",
+>>>>>>> eb5eb04... Update READMe with DB instructions.
     "dotenv": "^7.0.0",
     "express": "^4.16.4",
     "moment": "^2.24.0",
