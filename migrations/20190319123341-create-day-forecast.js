@@ -1,4 +1,3 @@
-'use strict';
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.createTable('DayForecasts', {
@@ -46,18 +45,17 @@ module.exports = {
       },
       LocationId: {
         type: Sequelize.INTEGER,
-        onDelete: "CASCADE",
+        onDelete: 'CASCADE',
         allowNull: false,
         references: {
           model: 'Locations',
           key: 'id'
         }
       }
-    })
-    .then(() => queryInterface.addIndex('DayForecasts', ['date']))
-    .then(() => queryInterface.addConstraint('DayForecasts', ['date', 'LocationId'], { type: 'unique' }))
+    }).then(() => queryInterface.addIndex('DayForecasts', ['date']))
+      .then(() => queryInterface.addConstraint('DayForecasts', ['date', 'LocationId'], { type: 'unique' }))
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable('DayForecasts');
+    return queryInterface.dropTable('DayForecasts')
   }
-};
+}

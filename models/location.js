@@ -1,4 +1,3 @@
-'use strict';
 module.exports = (sequelize, DataTypes) => {
   const Location = sequelize.define('Location', {
     city: {
@@ -22,16 +21,16 @@ module.exports = (sequelize, DataTypes) => {
     indexes: [
       {
         unique: true,
-        fields: ['city', 'country']
+        fields: [ 'city', 'country' ]
       },
       {
         method: 'BTREE',
-        fields: ['timezone']
+        fields: [ 'timezone' ]
       }
     ]
-  });
+  })
   Location.associate = models => {
-    Location.hasMany(models.DayForecast);
-  };
-  return Location;
-};
+    Location.hasMany(models.DayForecast)
+  }
+  return Location
+}

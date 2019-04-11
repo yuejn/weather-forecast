@@ -1,7 +1,5 @@
-'use strict';
+const textUtils = require('./lib/text')
+const forecastUtils = require('./lib/forecast')
 
-const textUtils = require('./lib/text');
-const forecastUtils = require('./lib/forecast');
-
-exports.Text = textUtils;
-exports.Forecast = forecastUtils;
+exports.Text = textUtils
+exports.Forecast = forecastUtils

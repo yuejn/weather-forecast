@@ -1,4 +1,3 @@
-'use strict';
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.createTable('PeriodicForecasts', {
@@ -79,10 +78,9 @@ module.exports = {
           key: 'id'
         }
       }
-    })
-    .then(() => queryInterface.addConstraint('PeriodicForecasts', ['startDate', 'DayForecastId'], { type: 'unique' }))
+    }).then(() => queryInterface.addConstraint('PeriodicForecasts', ['startDate', 'DayForecastId'], { type: 'unique' }))
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable('PeriodicForecasts');
+    return queryInterface.dropTable('PeriodicForecasts')
   }
-};
+}

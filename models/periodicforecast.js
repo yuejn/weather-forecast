@@ -1,4 +1,3 @@
-'use strict';
 module.exports = (sequelize, DataTypes) => {
   const PeriodicForecast = sequelize.define('PeriodicForecast', {
     startDate: {
@@ -57,13 +56,15 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.TEXT
     }
   }, {
-    indexes: [{
-      unique: true,
-      fields: ['startDate', 'DayForecastId']
-    }]
-  });
+    indexes: [
+      {
+        unique: true,
+        fields: [ 'startDate', 'DayForecastId' ]
+      }
+    ]
+  })
   PeriodicForecast.associate = models => {
-    PeriodicForecast.belongsTo(models.DayForecast);
-  };
-  return PeriodicForecast;
-};
+    PeriodicForecast.belongsTo(models.DayForecast)
+  }
+  return PeriodicForecast
+}

@@ -1,4 +1,3 @@
-'use strict';
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.createTable('Locations', {
@@ -33,11 +32,10 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE
       }
-    })
-    .then(() => queryInterface.addConstraint('Locations', ['city', 'country'], { type: 'unique' }))
-    .then(() => queryInterface.addIndex('Locations', ['timezone']))
+    }).then(() => queryInterface.addConstraint('Locations', ['city', 'country'], { type: 'unique' }))
+      .then(() => queryInterface.addIndex('Locations', ['timezone']))
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable('Locations');
+    return queryInterface.dropTable('Locations')
   }
-};
+}

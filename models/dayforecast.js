@@ -1,4 +1,3 @@
-'use strict';
 module.exports = (sequelize, DataTypes) => {
   const DayForecast = sequelize.define('DayForecast', {
     date: {
@@ -34,17 +33,17 @@ module.exports = (sequelize, DataTypes) => {
     indexes: [
       {
         unique: true,
-        fields: ['date', 'LocationId']
+        fields: [ 'date', 'LocationId' ]
       },
       {
         method: 'BETREE',
-        fields: ['date']
+        fields: [ 'date' ]
       }
     ]
-  });
+  })
   DayForecast.associate = models => {
-    DayForecast.hasMany(models.PeriodicForecast);
-    DayForecast.belongsTo(models.Location);
-  };
-  return DayForecast;
-};
+    DayForecast.hasMany(models.PeriodicForecast)
+    DayForecast.belongsTo(models.Location)
+  }
+  return DayForecast
+}
